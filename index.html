@@ -1,4 +1,4 @@
-[⚠️ Suspicious Content] <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -154,7 +154,6 @@
     </div>
   </div>
 
-  <!-- Soft chime sound -->
   <audio id="lunaChime" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c1bd55d8bb.mp3?filename=notification-132121.mp3" preload="auto"></audio>
 
   <script>
@@ -164,7 +163,7 @@
     const cooldownMessage = document.getElementById('cooldownMessage');
     const lunaChime = document.getElementById('lunaChime');
 
-    const cooldownDuration = 10000; // 10 seconds
+    const cooldownDuration = 10000;
     const cooldownPhrases = [
       "Hold your horses, darling—Luna’s conjuring a reply...",
       "Take a breath. Brilliance takes a second.",
@@ -227,7 +226,7 @@
         enterCooldown();
 
         try {
-          const response = await fetch('https://luna-vale-chat.jonathanpelliot.repl.co/api/chat', {
+          const response = await fetch('/.netlify/functions/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text, history })
