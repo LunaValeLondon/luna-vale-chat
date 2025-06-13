@@ -1,35 +1,30 @@
-const OpenAI = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const { OpenAI } = require('openai');
 
 exports.handler = async function(event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
   try {
-    const { message, history } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const { message, history } = body;
 
-    const messages = [
-      { role: 'system', content: 'You are Luna Vale, a poetic, witty assistant.' },
-      ...(history || []),
-      { role: 'user', content: message }
-    ];
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages,
+      messages: [
+        { role: 'system', content: 'You are Luna Vale, a poetic, witty digital muse.' },
+        ...(history || []),
+        { role: 'user', content: message }
+      ],
       temperature: 0.75,
       max_tokens: 800
     });
 
-    const reply = response.choices[0].message.content;
-
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply })
+      body: JSON.stringify({ reply: response.choices[0].message.content })
     };
-  } catch (err) {
-    console.error('OpenAI error:', err);
+
+  } catch (error) {
+    console.error('Chat function error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Something went wrong.' })
