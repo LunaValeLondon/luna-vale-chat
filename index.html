@@ -1,0 +1,246 @@
+[⚠️ Suspicious Content] <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat with Luna Vale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Cormorant Garamond', serif;
+      background: #f9f7f3;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .chat-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    .chat-header h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+      position: relative;
+    }
+
+    .you {
+      align-self: flex-start;
+    }
+
+    .luna {
+      align-self: flex-end;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 0.25rem;
+    }
+
+    .label .timestamp {
+      visibility: hidden;
+      margin-left: 0.5em;
+    }
+
+    .label:hover .timestamp {
+      visibility: visible;
+    }
+
+    .bubble {
+      background: #eef1f8;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .luna .bubble {
+      background: #d8f4f8;
+    }
+
+    .chat-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border-top: 1px solid #e0e0e0;
+      padding: 1rem;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: none;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .chat-input button {
+      background: #6c63ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+      transition: background 0.3s ease;
+    }
+
+    .chat-input button.cooldown {
+      background: #ccc;
+      color: transparent;
+      cursor: wait;
+    }
+
+    .cooldown-message {
+      font-size: 14px;
+      color: #6c63ff;
+      text-align: center;
+      height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>Chat with Luna Vale</h2>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-input">
+      <div id="cooldownMessage" class="cooldown-message"></div>
+      <div class="chat-input-row">
+        <textarea id="userInput" rows="2" placeholder="Type your message..."></textarea>
+        <button id="sendButton">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Soft chime sound -->
+  <audio id="lunaChime" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c1bd55d8bb.mp3?filename=notification-132121.mp3" preload="auto"></audio>
+
+  <script>
+    const chatLog = document.getElementById('chatLog');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    const cooldownMessage = document.getElementById('cooldownMessage');
+    const lunaChime = document.getElementById('lunaChime');
+
+    const cooldownDuration = 10000; // 10 seconds
+    const cooldownPhrases = [
+      "Hold your horses, darling—Luna’s conjuring a reply...",
+      "Take a breath. Brilliance takes a second.",
+      "Even chaos needs a moment of grace.",
+      "Luna’s brewing wisdom—don’t rush the kettle."
+    ];
+
+    let cooldownActive = false;
+    let history = [];
+
+    function formatTime(date) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addMessage(sender, text) {
+      const message = document.createElement('div');
+      message.classList.add('message', sender);
+
+      const now = new Date();
+      const label = document.createElement('div');
+      label.classList.add('label');
+      const who = sender === 'you' ? 'You' : 'Luna';
+      label.innerHTML = `${who}<span class="timestamp"> · ${formatTime(now)}</span>`;
+      label.setAttribute('data-fulltimestamp', now.toISOString());
+
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      bubble.textContent = text;
+
+      message.appendChild(label);
+      message.appendChild(bubble);
+      chatLog.appendChild(message);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function enterCooldown() {
+      cooldownActive = true;
+      sendButton.disabled = true;
+      sendButton.classList.add('cooldown');
+      sendButton.textContent = '';
+
+      const phrase = cooldownPhrases[Math.floor(Math.random() * cooldownPhrases.length)];
+      cooldownMessage.textContent = phrase;
+
+      setTimeout(() => {
+        cooldownActive = false;
+        sendButton.disabled = false;
+        sendButton.classList.remove('cooldown');
+        sendButton.textContent = 'Send';
+        cooldownMessage.textContent = '';
+      }, cooldownDuration);
+    }
+
+    sendButton.addEventListener('click', async () => {
+      const text = userInput.value.trim();
+      if (text !== '' && !cooldownActive) {
+        addMessage('you', text);
+        history.push({ role: 'user', content: text });
+        userInput.value = '';
+        enterCooldown();
+
+        try {
+          const response = await fetch('https://luna-vale-chat.jonathanpelliot.repl.co/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history })
+          });
+          const data = await response.json();
+          addMessage('luna', data.reply);
+          history.push({ role: 'assistant', content: data.reply });
+          lunaChime.play();
+        } catch (err) {
+          addMessage('luna', "Oops... Luna lost her train of thought. Try again in a moment.");
+        }
+      }
+    });
+  </script>
+</body>
+</html>
